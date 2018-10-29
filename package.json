@@ -1,0 +1,22 @@
+{
+  "name": "lush-review-scraper",
+  "version": "1.0.0",
+  "description": "Scrapes all review data from Lush UK.",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon ./server.js --exec babel-node -e js",
+    "debug": "DEBUG=express:* nodemon ./server.js --exec babel-node -e js"
+  },
+  "author": "zky829",
+  "license": "MIT",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "nodemon": "^1.18.5",
+    "puppeteer": "^1.9.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}
