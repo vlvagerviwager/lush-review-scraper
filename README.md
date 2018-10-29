@@ -4,7 +4,7 @@ Love Lush? Hate having to click into product pages to see the Average Rating? Me
 
 The goal of this project is to set up a webpage that displays a table of all Lush products, accompanied by its Average Rating.
 
-## Technical details
+## Technical details
 
 - Node.js
 - Puppeteer
