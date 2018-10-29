@@ -8,6 +8,7 @@ The goal of this project is to set up a webpage that displays a table of all Lus
 
 - Node.js
 - Puppeteer
+- Yarn
 
 ## Help!
 

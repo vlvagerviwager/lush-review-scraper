@@ -2,7 +2,7 @@ import fs from 'fs';
 import puppeteer from 'puppeteer';
 
 const COUNTRY = 'uk';
-const URL = `https://${COUNTRY}.lush.com/`;
+const baseURI = `https://${COUNTRY}.lush.com/`;
 
 /*
 ## MVP
@@ -25,7 +25,7 @@ Steps to scrape the ratings for all products:
 
 1. Store in a database
 1. Automate entire process to run once a day/week/whenever new products are added, etc.
-1. Let user choose between countries (as it defaults to UK right now)
+1. Let user choose between countries (as it defaults to UK right now) - IF ratings vary in each store
 */
 
 async function run() {
@@ -36,24 +36,52 @@ async function run() {
     height: 718,
   });
 
-  await page.goto(URL);
+  await page.goto(baseURI);
   // Open Products menu
   await page.click('a.no-link.products');
+  // Check that the click worked
+  // await page.screenshot({ path: './screenshots/page.png' });
 
-  // Get all nodes that are category submenu headings
-  let categoryListItems = await page.waitForSelector('li.menu-mlid-64996');
-    const productCategories = await page.evaluate(() => {
-    let listItems = Array.from(document.querySelectorAll('ul[class=children]'));
-    return listItems;
+  await page.waitForSelector('li.menu-mlid-64996');
+
+  // Listen for console.logs in browser
+  page.on('console', msg => {
+    for (let i = 0; i < msg.args().length; ++i)
+      console.log(`${i}: ${msg.args()[i]}`);
   });
 
-  // TODO: iterate through each submenu heading to get the category URL
-  // console.log(categoryListItems);
+  const submenusSelector = 'li.first.expanded.active.menu-mlid-64996 > ul.children';
 
-  // TODO: iterate through each submenu heading to get the category URL
+  // Get all category submenu heading nodes (e.g. "Bath & Shower")
+  const categoryURLs = await page.evaluate((submenusSelector) => {
+    // Submenu heading and list nodes
+    const submenuLists = document.querySelectorAll(submenusSelector)[0].children;
+    console.log('submenuLists', submenuLists);
 
-  // Test
-  await page.screenshot({ path: './screenshots/page.png' });
+    const submenuCategoryLists = Array.from(submenuLists).map(submenu => {
+      // Each list - e.g. list of links below "Bath & Shower"
+      return submenu.childNodes[1];
+    });
+
+    const categoryURLsPerList = Array.from(submenuCategoryLists).map(submenuCategoryList => {
+      // Get URLs
+      const urls = Array.from(submenuCategoryList.children).map(listItem => {
+        // Get the category URL (e.g. https://uk.lush.com/products/bath-bombs)
+        const hrefValue = listItem.firstChild.getAttribute('href');
+
+        return hrefValue.includes('https://uk.lush.com') ? hrefValue : `https://uk.lush.com${hrefValue}`;
+      });
+
+      return urls;
+    });
+
+    // Flatten categoryURLsPerList - it is an array of arrays (top level = category)
+    return categoryURLsPerList.flat();
+  }, submenusSelector);
+
+  console.info('categoryURLs', categoryURLs);
+
+  // TODO: Now, go through each category URL and get all product links
 
   browser.close();
 }
