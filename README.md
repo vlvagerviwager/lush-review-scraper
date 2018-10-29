@@ -2,7 +2,7 @@
 
 Love Lush? Hate having to click into product pages to see the Average Rating? Me too!
 
-The goal of this project is to set up a webpage that displays a table of all Lush products, accompanied by its Average Rating.
+The goal of this project is to set up a webpage that displays a table of all Lush products, accompanied by its Average Rating. Currently you must open a product and expand the Reviews header to see its Average Rating.
 
 ## Technical details
 
