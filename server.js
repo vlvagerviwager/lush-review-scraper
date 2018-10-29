@@ -79,6 +79,7 @@ async function run() {
     return categoryURLsPerList.flat();
   }, submenusSelector);
 
+  // TODO: Save to ./data/categories.json
   console.info('categoryURLs', categoryURLs);
 
   // TODO: Now, go through each category URL and get all product links
