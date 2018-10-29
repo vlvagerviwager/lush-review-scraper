@@ -56,7 +56,6 @@ async function run() {
   const categoryURLs = await page.evaluate((submenusSelector) => {
     // Submenu heading and list nodes
     const submenuLists = document.querySelectorAll(submenusSelector)[0].children;
-    console.log('submenuLists', submenuLists);
 
     const submenuCategoryLists = Array.from(submenuLists).map(submenu => {
       // Each list - e.g. list of links below "Bath & Shower"
@@ -79,10 +78,16 @@ async function run() {
     return categoryURLsPerList.flat();
   }, submenusSelector);
 
-  // TODO: Save to ./data/categories.json
   console.info('categoryURLs', categoryURLs);
 
-  // TODO: Now, go through each category URL and get all product links
+  // Prune duplicates
+  const uniqueCategoryURLsSet = new Set(categoryURLs);
+  const uniqueCategoryURLs = Array.from(uniqueCategoryURLsSet);
+
+  // TODO: Save to ./data/categories.json
+  console.info('uniqueCategoryURLs', uniqueCategoryURLs);
+
+  // TODO: Now, go through each category URL and get all product links. Put them into a Set
 
   browser.close();
 }
