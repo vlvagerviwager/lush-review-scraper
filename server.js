@@ -37,7 +37,21 @@ async function run() {
   });
 
   await page.goto(URL);
+  // Open Products menu
   await page.click('a.no-link.products');
+
+  // Get all nodes that are category submenu headings
+  let categoryListItems = await page.waitForSelector('li.menu-mlid-64996');
+    const productCategories = await page.evaluate(() => {
+    let listItems = Array.from(document.querySelectorAll('ul[class=children]'));
+    return listItems;
+  });
+
+  // TODO: iterate through each submenu heading to get the category URL
+  // console.log(categoryListItems);
+
+  // TODO: iterate through each submenu heading to get the category URL
+
   // Test
   await page.screenshot({ path: './screenshots/page.png' });
 
