@@ -24,7 +24,8 @@ Steps to scrape the ratings for all products:
 ## Future
 
 1. Store in a database
-2. Automate entire process to run once a day/week/whenever new products are added, etc.
+1. Automate entire process to run once a day/week/whenever new products are added, etc.
+1. Let user choose between countries (as it defaults to UK right now)
 */
 
 async function run() {
