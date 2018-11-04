@@ -84,8 +84,9 @@ async function run() {
   const uniqueCategoryURLsSet = new Set(categoryURLs);
   const uniqueCategoryURLs = Array.from(uniqueCategoryURLsSet);
 
-  // TODO: Save to ./data/categories.json
-  console.info('uniqueCategoryURLs', uniqueCategoryURLs);
+  // Turn to JSON and save to ./data/categories.json
+  fs.writeFileSync('./data/categoryUrls.json', '');
+  fs.writeFileSync('./data/categoryUrls.json', JSON.stringify(uniqueCategoryURLs, null, 2));
 
   // TODO: Now, go through each category URL and get all product links. Put them into a Set
 
