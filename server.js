@@ -1,6 +1,12 @@
 import fs from 'fs';
 import puppeteer from 'puppeteer';
 
+import {
+  writeCategoryURLsToFile,
+  writeProductRatingsToFile,
+  writeProductURLsToFile,
+} from './utils';
+
 const COUNTRY = 'uk';
 const baseURI = `https://${COUNTRY}.lush.com/`;
 
@@ -29,6 +35,10 @@ Steps to scrape the ratings for all products:
 1. Automate entire process to run once a day/week/whenever new products are added, etc.
 1. Let user choose between countries (as it defaults to UK right now) - IF ratings vary in each store
 1. Add category filter
+
+## Troubleshooting
+
+- How to kill all instances of Chromium and Chromium Helper: https://superuser.com/questions/131019/killing-all-instances-of-chrome-on-the-command-line
 */
 
 async function run() {
@@ -92,15 +102,23 @@ async function run() {
   const productImageSelector = 'div.product-module-product-image';
 
   const productURLs = await page.evaluate((productImageSelector) => {
+    /*
+     * Takes a product image element and returns the href
+     *
+     * FIXME: If this is imported from utils, this happens:
+     * Error: Evaluation failed: ReferenceError: _utils is not defined
+     */
+    const getHrefFromProductImage = (productImage) => {
+      const imageAnchor = productImage.childNodes[1];
+      productHref = imageAnchor.getAttribute('href');
+
+      return productHref.includes('https://uk.lush.com') ? productHref : `https://uk.lush.com${productHref}`;
+    };
+
     const productImages = document.querySelectorAll(productImageSelector);
 
     const productURLs = (Array.from(productImages)).map((image) => {
-      const imageAnchor = image.childNodes[1];
-      productHref = imageAnchor.getAttribute('href');
-
-      const productBaseURI = imageAnchor.baseURI;
-
-      return productHref.includes('https://uk.lush.com') ? productHref : `https://uk.lush.com${productHref}`;
+      return getHrefFromProductImage(image);
     });
 
     return productURLs;
@@ -118,14 +136,21 @@ async function run() {
   const reviewSelector = '[class=object-review-product-rating-right]';
 
   const productRating = await page.evaluate((reviewSelector) => {
+    /*
+      * Get rid of \n before the product name
+      *
+      * FIXME: If this is imported from utils, this happens:
+      * Error: Evaluation failed: ReferenceError: _utils is not defined
+      */
+    const formatProductName = (name) => {
+      return name.replace(/\n/g, '');
+    };
+
     const productRatingInfo = document.querySelector(reviewSelector);
 
-    // TODO
     const productNameSelector = 'h1.product-title';
-    let productName = document.querySelector(productNameSelector).innerHTML;
-    productName = productName.replace(/\n/g, '');
+    const productName = formatProductName(document.querySelector(productNameSelector).innerHTML);
     const averageRating = productRatingInfo.children[0].innerHTML;
-
 
     return {
       'name': productName,
@@ -139,30 +164,6 @@ async function run() {
 
   browser.close();
 }
-
-/*
- * Takes an Array of category URLs to be written to file as JSON
- */
-const writeCategoryURLsToFile = (categoryURLsArray) => {
-  // Turn to JSON and save to ./data/categoryUrls.json
-  fs.writeFileSync('./data/categoryUrls.json', '');
-  fs.writeFileSync('./data/categoryUrls.json', JSON.stringify(categoryURLsArray, null, 2));
-};
-
-/*
- * Takes an Array of product URLs to be written to file as JSON
- */
-const writeProductURLsToFile = (productURLsArray) => {
-  // Turn to JSON and save to ./data/productUrls.json
-  fs.writeFileSync('./data/productUrls.json', '');
-  fs.writeFileSync('./data/productUrls.json', JSON.stringify(productURLsArray, null, 2));
-};
-
-const writeProductRatingsToFile = (productRatingsArray) => {
-  // Turn to JSON and save to ./data/productUrls.json
-  fs.writeFileSync('./data/productRatings.json', '');
-  fs.writeFileSync('./data/productRatings.json', JSON.stringify(productRatingsArray, null, 2));
-};
 
 run();
 
