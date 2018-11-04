@@ -8,7 +8,7 @@ import {
 } from './utils';
 
 const COUNTRY = 'uk';
-const baseURI = `https://${COUNTRY}.lush.com/`;
+const BASE_URI = `https://${COUNTRY}.lush.com/`;
 
 /*
 ## MVP
@@ -29,6 +29,7 @@ Steps to scrape the ratings for all products:
 
 ## Future
 
+1. Open each category URL in a new page
 1. Configure ESLint 💀
 1. Add tests 💔
 1. Store in a database
@@ -51,7 +52,7 @@ async function run() {
     height: 718,
   });
 
-  await page.goto(baseURI);
+  await page.goto(BASE_URI);
   // Open Products menu
   await page.click('a.no-link.products');
   await page.waitForSelector('li.menu-mlid-64996');
