@@ -100,8 +100,7 @@ async function run() {
 
       const productBaseURI = imageAnchor.baseURI;
 
-      // TODO: return JSON object
-      return productHref.includes(productBaseURI) ? productHref : `${productBaseURI}${productHref}`;
+      return productHref.includes('https://uk.lush.com') ? productHref : `https://uk.lush.com${productHref}`;
     });
 
     return productURLs;
@@ -111,7 +110,32 @@ async function run() {
   const uniqueProductURLsArray = Array.from(new Set(productURLs));
   writeProductURLsToFile(uniqueProductURLsArray);
 
-  // TODO: Go through each product URL and get all review scores. Store in ./data/productRatings.json
+  // Go through each product URL and get all review scores. Store in ./data/productRatings.json
+  // TODO: What if there are no reviews?
+  // TODO: Don't hardcode URI, loop through ./data/productUrls.json
+  await page.goto('https://uk.lush.com/products/intergalactic');
+  await page.waitForSelector('div.body-wrapper');
+  const reviewSelector = '[class=object-review-product-rating-right]';
+
+  const productRating = await page.evaluate((reviewSelector) => {
+    const productRatingInfo = document.querySelector(reviewSelector);
+
+    // TODO
+    const productNameSelector = 'h1.product-title';
+    let productName = document.querySelector(productNameSelector).innerHTML;
+    productName = productName.replace(/\n/g, '');
+    const averageRating = productRatingInfo.children[0].innerHTML;
+
+
+    return {
+      'name': productName,
+      averageRating: averageRating,
+    };
+  }, reviewSelector);
+
+  console.log('productRating', productRating);
+
+  writeProductRatingsToFile([productRating]);
 
   browser.close();
 }
@@ -132,6 +156,12 @@ const writeProductURLsToFile = (productURLsArray) => {
   // Turn to JSON and save to ./data/productUrls.json
   fs.writeFileSync('./data/productUrls.json', '');
   fs.writeFileSync('./data/productUrls.json', JSON.stringify(productURLsArray, null, 2));
+};
+
+const writeProductRatingsToFile = (productRatingsArray) => {
+  // Turn to JSON and save to ./data/productUrls.json
+  fs.writeFileSync('./data/productRatings.json', '');
+  fs.writeFileSync('./data/productRatings.json', JSON.stringify(productRatingsArray, null, 2));
 };
 
 run();
