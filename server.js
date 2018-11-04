@@ -23,9 +23,12 @@ Steps to scrape the ratings for all products:
 
 ## Future
 
+1. Configure ESLint 💀
+1. Add tests 💔
 1. Store in a database
 1. Automate entire process to run once a day/week/whenever new products are added, etc.
 1. Let user choose between countries (as it defaults to UK right now) - IF ratings vary in each store
+1. Add category filter
 */
 
 async function run() {
@@ -78,20 +81,58 @@ async function run() {
     return categoryURLsPerList.flat();
   }, submenusSelector);
 
-  console.info('categoryURLs', categoryURLs);
+  // Prune duplicates
+  const uniqueCategoryURLsArray = Array.from(new Set(categoryURLs));
+  writeCategoryURLsToFile(uniqueCategoryURLsArray);
+
+  // Now, go through each category URL and get all product links. Put them into a Set
+  // TODO: Don't hardcode URI, loop through ./data/categoryUrls.json
+  await page.goto('https://uk.lush.com/products/bath-bombs');
+  await page.waitForSelector('div.body-wrapper');
+  const productImageSelector = 'div.product-module-product-image';
+
+  const productURLs = await page.evaluate((productImageSelector) => {
+    const productImages = document.querySelectorAll(productImageSelector);
+
+    const productURLs = (Array.from(productImages)).map((image) => {
+      const imageAnchor = image.childNodes[1];
+      productHref = imageAnchor.getAttribute('href');
+
+      const productBaseURI = imageAnchor.baseURI;
+
+      // TODO: return JSON object
+      return productHref.includes(productBaseURI) ? productHref : `${productBaseURI}${productHref}`;
+    });
+
+    return productURLs;
+  }, productImageSelector);
 
   // Prune duplicates
-  const uniqueCategoryURLsSet = new Set(categoryURLs);
-  const uniqueCategoryURLs = Array.from(uniqueCategoryURLsSet);
+  const uniqueProductURLsArray = Array.from(new Set(productURLs));
+  writeProductURLsToFile(uniqueProductURLsArray);
 
-  // Turn to JSON and save to ./data/categories.json
-  fs.writeFileSync('./data/categoryUrls.json', '');
-  fs.writeFileSync('./data/categoryUrls.json', JSON.stringify(uniqueCategoryURLs, null, 2));
-
-  // TODO: Now, go through each category URL and get all product links. Put them into a Set
+  // TODO: Go through each product URL and get all review scores. Store in ./data/productRatings.json
 
   browser.close();
 }
+
+/*
+ * Takes an Array of category URLs to be written to file as JSON
+ */
+const writeCategoryURLsToFile = (categoryURLsArray) => {
+  // Turn to JSON and save to ./data/categoryUrls.json
+  fs.writeFileSync('./data/categoryUrls.json', '');
+  fs.writeFileSync('./data/categoryUrls.json', JSON.stringify(categoryURLsArray, null, 2));
+};
+
+/*
+ * Takes an Array of product URLs to be written to file as JSON
+ */
+const writeProductURLsToFile = (productURLsArray) => {
+  // Turn to JSON and save to ./data/productUrls.json
+  fs.writeFileSync('./data/productUrls.json', '');
+  fs.writeFileSync('./data/productUrls.json', JSON.stringify(productURLsArray, null, 2));
+};
 
 run();
 
