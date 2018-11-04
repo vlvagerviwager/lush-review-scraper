@@ -38,7 +38,9 @@ Steps to scrape the ratings for all products:
 
 ## Troubleshooting
 
-- How to kill all instances of Chromium and Chromium Helper: https://superuser.com/questions/131019/killing-all-instances-of-chrome-on-the-command-line
+- How to kill all instances of Chromium and Chromium Helper
+    - `ps aux | awk '/chromium/ { print $2 } ' | xargs kill -9`
+    - https://superuser.com/questions/131019/killing-all-instances-of-chrome-on-the-command-line
 */
 
 async function run() {
@@ -52,9 +54,6 @@ async function run() {
   await page.goto(baseURI);
   // Open Products menu
   await page.click('a.no-link.products');
-  // Check that the click worked
-  // await page.screenshot({ path: './screenshots/page.png' });
-
   await page.waitForSelector('li.menu-mlid-64996');
 
   // Listen for console.logs in browser
